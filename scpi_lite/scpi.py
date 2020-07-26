@@ -77,7 +77,7 @@ class SCPIDevice(object):
             if dev == 'USB':
                 transport = load_transport('usbtmc')
                 conn = transport.USBTMCDevice(device, **args)
-            if port:
+            elif port:
                 transport = load_transport('tcp')
                 conn = transport.TCPDevice(dev, port, **args)
             elif (dev.startswith("/dev/usbtmc")):
