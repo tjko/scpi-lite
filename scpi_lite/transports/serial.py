@@ -31,8 +31,8 @@ class SerialDevice(SCPITransport):
     """
     SerialDevice class implements Serial (RS-232/TTL) transport.
     """
-    
-    def __init__(self, device, timeout=5, terminator=b'\n',
+
+    def __init__(self, device, timeout=5, terminator=b'\n', verbose=False,
                  baudrate=115200, bytesize=serial.EIGHTBITS,
                  parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,
                  xonxoff=False, rtscts=False, dsrdtr=False):
@@ -49,7 +49,7 @@ class SerialDevice(SCPITransport):
         :rtscts: use RTS/CTS flow control [Default: False]
         :dsrdtr: use DSR/DTR flow control [Default: False]
         """
-        
+
         try:
             self.conn = serial.Serial(port=device, baudrate=baudrate, bytesize=bytesize,
                                       parity=parity, stopbits=stopbits, timeout=timeout,
@@ -58,6 +58,7 @@ class SerialDevice(SCPITransport):
             raise SCPITransportError(err)
         self.conn.flush()
         self.terminator = terminator
+        self.verbose = verbose
 
 
     def read(self):

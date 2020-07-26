@@ -31,20 +31,29 @@ class USBTMCDevice(SCPITransport):
     """
     USBTMCDevice class implmenes USBTMC transport using usbtmc module.
     """
-    
+
     READ_BUF_SIZE = 1024*1024
-    
-    def __init__(self, device, timeout=5):
+
+    def __init__(self, device, timeout=5, verbose=False):
         """
         Open USBTMC device using usbtmc module.
 
         :device: connection string passed to usbtmc module
         :timeout: timeout for device to respond in seconds [Default 5 seconds]
         """
-        
+
+        self.timeout = timeout
+        self.verbose = verbose
         self.conn = usbtmc.Instrument(device)
 
-        
+
+    def __del__(self):
+        try:
+            self.conn.close()
+        except usbtmc.UsbtmcException:
+            pass
+
+
     def read(self):
         """
         Read data (reponse) from device.
@@ -52,12 +61,12 @@ class USBTMCDevice(SCPITransport):
         Returns the data excluding any trailing whitespace.
         """
 
-        r = self.conn.read_raw(READ_BUF_SIZE)
+        r = self.conn.read_raw(self.READ_BUF_SIZE)
         if self.verbose:
             print("%s: Read: '%s'" % (__name__, r))
         return r.rstrip()
 
-    
+
     def write(self, data):
         """
         Write data (command) to device.
@@ -65,6 +74,6 @@ class USBTMCDevice(SCPITransport):
 
         if self.verbose:
             print("%s: Write: '%s'" % (__name__, data))
-        return selc.conn.write_raw(data)
+        return self.conn.write_raw(data)
 
         

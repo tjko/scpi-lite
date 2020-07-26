@@ -31,30 +31,33 @@ class LinuxUSBTMCDevice(SCPITransport):
 
     This works with /dev/usbtmc* devices present on a Linux system.
     """
-    
+
     READ_BUF_SIZE = 1024*1024
-    
-    def __init__(self, device, timeout=5):
+
+    def __init__(self, device, timeout=5, verbose=False):
         """
         Open USBTMC device (/dev/usbtmc*) based connection.
 
         :device: device name (/dev/usbtmc0, ...)
         :timeout: timeout for device to respond in seconds [Default 5 seconds]
         """
-        
+
         try:
             self.conn = os.open(device, os.O_RDWR)
         except OSError as err:
             raise SCPITransportError(err)
 
-        
+        self.timeout = timeout
+        self.verbose = verbose
+
+
     def __del__(self):
         try:
             os.close(self.conn)
         except:
             pass
 
-        
+
     def read(self):
         """
         Read data (reponse) from device.
@@ -71,12 +74,12 @@ class LinuxUSBTMCDevice(SCPITransport):
             print('Read: %d: %s' % (len(r), r))
         return r.rstrip()
 
-    
+
     def write(self, data):
         """
         Write data (command) to device.
         """
-        
+
         if self.verbose:
             print('Write: %d: %s' % (len(data), data))
         return os.write(self.conn, data)

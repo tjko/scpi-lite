@@ -31,11 +31,12 @@ class TCPDevice(SCPITransport):
     """
     TCPDevice class implmeents TCP/IP transport.
     """
-    
+
     READ_BUF_SIZE = 1024*1024
     DEFAULT_PORT = 5555
-    
-    def __init__(self, device, port, timeout=5):
+
+
+    def __init__(self, device, port, timeout=5, verbose=False):
         """
         Open TCP connection to specified device.
 
@@ -49,12 +50,14 @@ class TCPDevice(SCPITransport):
             self.port = port
         self.host = device
         self.timeout = timeout
-            
+        self.verbose = verbose
+
         try:
             self.conn = socket.create_connection((self.host, self.port), timeout)
         except (ConnectionRefusedError, socket.gaierror, socket.timeout) as err:
             errmsg = "Connection to %s:%s failed: %s" % (self.host, self.port, err)
             raise SCPITransportError(errmsg)
+
 
     def __del__(self):
         try:
@@ -62,29 +65,33 @@ class TCPDevice(SCPITransport):
         except:
             pass
 
+
     def read(self):
-       """
+        """
         Read data (reponse) from device.
 
         Returns the data excluding any trailing whitespace.
         """
-         
+
         try:
             r = self.conn.recv(self.READ_BUF_SIZE)
         except socket.timeout:
             print('%s: read timeout' % (__name__))
             r = bytes()
+
         if self.verbose:
             print('Read: %d: %s' % (len(r), r))
+
         return r.rstrip()
+
 
     def write(self, data):
         """
         Write data (command) to device.
         """
-        
+
         if self.verbose:
             print('Write: %d: %s' % (len(data), data))
+
         return self.conn.sendall(data)
 
-        
