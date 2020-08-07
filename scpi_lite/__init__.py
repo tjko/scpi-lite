@@ -28,7 +28,7 @@ simple yet robust means of sending SCPI commands/queries to instruments.
 See https://github.com/tjko/scpi_lite/ for more information.
 """
 
-__version__ = 0.1
+__version__ = 0.2
 
 VERSION = __version__
 

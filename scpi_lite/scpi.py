@@ -50,22 +50,26 @@ class SCPIDevice(object):
     verbose = False
     quirk_no_idn = False
     quirk_no_opc = False
+    quirk_no_syst_err = False
     no_opc_delay = 0.25
     manufacturer = 'Unknown'
     model = 'Unknown'
     serial = 'Unknown'
     firmware = 'Unknown'
     idn = ''
+    last_error = ''
     
     
     def __init__(self, device, command_terminator='\n',
-                 idn=True, opc=True, encoding='utf-8', **args):
+                 idn=True, opc=True, err=True,
+                 encoding='utf-8', **args):
         """
         Creates an instance of SCPIDevice to commmunicate with instruments.
 
         :device: Connection string identifying the device to connect to.
         :idn: Device supports *IDN? command (True/False). [Default: True]
         :opc: Device supports *OPC? command (True/False). [Default: True]
+        :err: Device support SYST:ERR? command (True/False). [Default: True]
 
         Additionally transport specific options can be added that are passed
         directly to underlying transport class (SCPITransport).
@@ -94,6 +98,7 @@ class SCPIDevice(object):
         self.command_terminator = command_terminator
         self.quirk_no_idn = not idn
         self.quirk_no_opc = not opc
+        self.quirk_no_syst_err = not err
 
         if (self.unit_ready() != 1):
             raise SCPIError("No response (Not SCPI compatible device?): %s" % (device))
@@ -101,7 +106,7 @@ class SCPIDevice(object):
         if self.quirk_no_idn:
             return
 
-        res = self.query('*IDN?')
+        res = self._idn()
         if res:
             if self.verbose:
                 print('IDN: %s' % (res))
@@ -119,7 +124,7 @@ class SCPIDevice(object):
                 self.firmware = i[3]
         else:
             raise SCPIError("No response to *IDN? (not SCPI compliant device?): %s" % (device))
-        self.command('*CLS')
+        self._cls()
 
             
 
@@ -144,6 +149,9 @@ class SCPIDevice(object):
         """
         Send "raw" data to device. Data is send as is withouth any transformations.
         """
+        if self.verbose:
+            print('%s: write_raw: %s' % (__name__, cmd))
+
         return self.conn.write(cmd)
 
     
@@ -167,7 +175,10 @@ class SCPIDevice(object):
         """
         Read raw response from device. This function returns bytes.
         """
-        return self.conn.read()
+        if self.verbose:
+            print('%s: read_raw: %s' % (__name__, buf))
+
+            return self.conn.read()
 
     
     def unit_ready(self, retries=3, delay=0.1):
@@ -187,14 +198,14 @@ class SCPIDevice(object):
             return 1
         
         while (count < retries):
-            self.write('*OPC?')
+            self._opc()
             r = self.read()
-            if (int(r) == 1):
-                break
+            if (r == '1'):
+                return 1
             count += 1
             time.sleep(delay)
             
-        return int(r)
+        return 0
 
     
     def command(self, cmd):
@@ -203,6 +214,8 @@ class SCPIDevice(object):
         If device is not ready SCPIError exception is raised.
 
         If command is missing terminator (default: \n) it is appended automatically.
+
+        Return value: Response to SYST:ERR? after executing command.
         """
         if self.verbose:
             print('%s: send_command: %s' % (__name__, cmd))
@@ -210,9 +223,14 @@ class SCPIDevice(object):
         if not self.unit_ready():
             raise SCPIError("Device not ready!")
         
-        return self.write(cmd)
+        self.write(cmd)
 
-    
+        if self.quirk_no_syst_err:
+            return '0, "No Error"'
+
+        return self._syst_err()
+
+
     def query(self, cmd):
         """
         Send a SCPI command to device and wait for response.
@@ -220,6 +238,8 @@ class SCPIDevice(object):
         If device is not ready SCPIError exception is raised.
 
         If command is missing terminator (default: \n) it is appended automatically.
+
+        Return value: Response from unit to the command.
         """
         if self.verbose:
             print('%s: send_query: %s' % (__name__, cmd))
@@ -232,5 +252,26 @@ class SCPIDevice(object):
         
         if self.verbose:
             print("%s: response: '%s'" % (__name__, resp))
+
+        self._syst_err()
             
         return resp
+
+
+    # SCPI standard commands (possible of override by subclassing...)
+
+    def _syst_err(self):
+        self.write('SYST:ERR?')
+        self.last_error = self.read()
+        return self.last_error
+
+    def _idn(self):
+        return self.query('*IDN?')
+
+    def _cls(self):
+        return self.write('*CLS')
+
+    def _opc(self):
+        return self.write('*OPC?')
+
+

@@ -26,7 +26,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="scpi-lite",
-    version="0.1",
+    version="0.2",
     license="GPL",
     author="Timo Kokkonen",
     author_email="tjko@iki.fi",
