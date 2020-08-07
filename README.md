@@ -67,6 +67,7 @@ Transport|Option|Description|Example
 ---------|------|-----------|-------
 *all*|timeout|Timeout for waiting response from the instrument (in seconds) [Default: 5]|timeout=10
 *all*|verbose|Enable verbose/debug output (boolean) [Default: False]|verbose=True
+serial|terminator|Response terminator (allows working with devices no complying with SCPI spec) [Default: \n]|terminator=b'\n\r'
 serial|baudrate|Baud rate (bps) [Default: 115200]|baudrate=9600
 serial|bytesize|Byte size [Default: EIGHTBITS]|bytesize=serial.SEVENBITS
 serial|parity|Parity [Default: PARITY_NONE]|parity=serial.PARITY_EVEN
