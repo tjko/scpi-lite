@@ -34,7 +34,7 @@ def load_transport(name):
     except ImportError as e:
         raise SCPITransportError(e)
     return module
-        
+
 
 class SCPIDevice(object):
     """
@@ -58,8 +58,8 @@ class SCPIDevice(object):
     firmware = 'Unknown'
     idn = ''
     last_error = ''
-    
-    
+
+
     def __init__(self, device, command_terminator='\n',
                  idn=True, opc=True, err=True,
                  encoding='utf-8', **args):
@@ -126,7 +126,7 @@ class SCPIDevice(object):
             raise SCPIError("No response to *IDN? (not SCPI compliant device?): %s" % (device))
         self._cls()
 
-            
+
 
     def write(self, cmd):
         """
@@ -144,7 +144,7 @@ class SCPIDevice(object):
             c = cmd
         return self.conn.write(c.encode(self.encoding))
 
-    
+
     def write_raw(self, cmd):
         """
         Send "raw" data to device. Data is send as is withouth any transformations.
@@ -154,7 +154,7 @@ class SCPIDevice(object):
 
         return self.conn.write(cmd)
 
-    
+
     def read(self):
         """
         Read response string from device. Empty string is returned if
@@ -164,13 +164,13 @@ class SCPIDevice(object):
         """
         buf = self.conn.read()
         buf = buf.decode(self.encoding)
-        
+
         if self.verbose:
             print('%s: read: %s' % (__name__, buf))
-            
+
         return buf
 
-    
+
     def read_raw(self):
         """
         Read raw response from device. This function returns bytes.
@@ -180,7 +180,7 @@ class SCPIDevice(object):
 
             return self.conn.read()
 
-    
+
     def unit_ready(self, retries=3, delay=0.1):
         """
         Wait for unit to be ready by issuing *OPC? command and checking
@@ -192,11 +192,11 @@ class SCPIDevice(object):
         ready before sending data to device.
         """
         count = 0
-        
+
         if self.quirk_no_opc:
             time.sleep(self.no_opc_delay)
             return 1
-        
+
         while (count < retries):
             self._opc()
             r = self.read()
@@ -204,10 +204,10 @@ class SCPIDevice(object):
                 return 1
             count += 1
             time.sleep(delay)
-            
+
         return 0
 
-    
+
     def command(self, cmd):
         """
         Send a SCPI command to device after waiting device to become ready.
@@ -219,10 +219,10 @@ class SCPIDevice(object):
         """
         if self.verbose:
             print('%s: send_command: %s' % (__name__, cmd))
-            
+
         if not self.unit_ready():
             raise SCPIError("Device not ready!")
-        
+
         self.write(cmd)
 
         if self.quirk_no_syst_err:
@@ -243,18 +243,18 @@ class SCPIDevice(object):
         """
         if self.verbose:
             print('%s: send_query: %s' % (__name__, cmd))
-            
+
         if not self.unit_ready():
             raise SCPIError("Device not ready!")
-        
+
         self.write(cmd)
         resp = self.read()
-        
+
         if self.verbose:
             print("%s: response: '%s'" % (__name__, resp))
 
         self._syst_err()
-            
+
         return resp
 
 

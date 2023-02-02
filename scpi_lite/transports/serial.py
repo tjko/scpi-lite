@@ -32,7 +32,7 @@ class SerialDevice(SCPITransport):
     SerialDevice class implements Serial (RS-232/TTL) transport.
     """
 
-    def __init__(self, device, timeout=5, terminator=b'\n', verbose=False,
+    def __init__(self, device, timeout=5, terminator=(b'\r\n', b'\n'), verbose=0,
                  baudrate=115200, bytesize=serial.EIGHTBITS,
                  parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,
                  xonxoff=False, rtscts=False, dsrdtr=False):
@@ -64,7 +64,7 @@ class SerialDevice(SCPITransport):
     def read(self):
         """
         Read data (reponse) from device.
-        Read until response trerminator received (default: \n).
+        Read until response trerminator received (default: \r\n or \n).
 
         Returns the data up to the terminator.
         """
@@ -73,11 +73,16 @@ class SerialDevice(SCPITransport):
             r = self.conn.read(1)
             if (len(r) < 1):
                 break
-            if self.verbose:
+            if self.verbose > 1:
                 print('Received: %s' % (r))
             buf.extend(r)
-            if (buf.endswith(self.terminator)):
-                buf = buf.rstrip(self.terminator)
+            endofline = 0
+            for term in self.terminator:
+                if (buf.endswith(term)):
+                    buf = buf.rstrip(term)
+                    endofline = 1
+                    break
+            if endofline:
                 break
 
         buf = bytes(buf)
