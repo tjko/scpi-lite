@@ -24,7 +24,7 @@ class SCPITransport:
     """
     A base class for implementing a transport for SCPIDevice class.
     """
-    
+
     conn = None
     verbose = 0
 
@@ -32,22 +32,32 @@ class SCPITransport:
         """
         A transport implementation  must override this constructor.
         """
-        
+
         raise NotImplementedError()
 
     def read(self):
         """
         Read data (reponse) from the device.
         """
-        
+
         raise NotImplementedError()
 
     def write(self, data):
         """
         Send data (command) to the device.
         """
-        
+
         raise NotImplementedError()
 
 
-    
+    def flush_input(self):
+        """
+        Flush input buffer, discarding all its contents.
+        """
+
+    def flush_output(self):
+        """
+        Flush output buffer, discarding all its contents.
+        """
+
+

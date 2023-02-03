@@ -100,6 +100,7 @@ class SCPIDevice(object):
         self.quirk_no_opc = not opc
         self.quirk_no_syst_err = not err
 
+        self.conn.flush_input()
         if (self.unit_ready() != 1):
             raise SCPIError("No response (Not SCPI compatible device?): %s" % (device))
 
@@ -256,6 +257,20 @@ class SCPIDevice(object):
         self._syst_err()
 
         return resp
+
+
+    def flush_input(self):
+        """
+        Flush input buffer.
+        """
+        self.conn.flush_input()
+
+
+    def flush_output(self):
+        """
+        Flush output buffer.
+        """
+        self.conn.flush_output()
 
 
     # SCPI standard commands (possible of override by subclassing...)

@@ -56,7 +56,7 @@ class SerialDevice(SCPITransport):
                                       xonxoff=xonxoff, rtscts=rtscts, dsrdtr=dsrdtr)
         except (OSError, ValueError, serial.SerialException) as err:
             raise SCPITransportError(err)
-        self.conn.flush()
+
         self.terminator = terminator
         self.verbose = verbose
 
@@ -98,3 +98,18 @@ class SerialDevice(SCPITransport):
             print('Write: %d: %s' % (len(data), data))
         return self.conn.write(data)
 
+    def flush_input(self):
+        """
+        Flush serial input buffer.
+        """
+        if self.verbose:
+            print("Flush seridl input buffer.")
+        self.conn.reset_input_buffer()
+
+    def flush_output(self):
+        """
+        Flush serial output buffer.
+        """
+        if self.verbose:
+            print("Flush seridl input buffer.")
+        self.conn.reset_output_buffer()
