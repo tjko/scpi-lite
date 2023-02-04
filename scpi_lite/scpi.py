@@ -232,7 +232,17 @@ class SCPIDevice(object):
         return self._syst_err()
 
 
-    def query(self, cmd):
+    def _wait_input(self, timeout):
+        count = 0
+        while count < timeout:
+            if self.conn.pending_input() > 0:
+                return 1
+            time.sleep(0.001)
+            count += 1
+        return 0
+
+
+    def query(self, cmd, multi_line=False, multi_line_wait=100):
         """
         Send a SCPI command to device and wait for response.
         Before sending command check and wait for device to be ready.
@@ -250,6 +260,11 @@ class SCPIDevice(object):
 
         self.write(cmd)
         resp = self.read()
+        if multi_line:
+            while self._wait_input(multi_line_wait):
+                next = self.read()
+                if len(next) > 0:
+                    resp += '\n' + next
 
         if self.verbose:
             print("%s: response: '%s'" % (__name__, resp))

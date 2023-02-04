@@ -49,6 +49,11 @@ class SCPITransport:
 
         raise NotImplementedError()
 
+    def pending_input(self):
+        """
+        Return the number of bytes in the input buffer.
+        """
+        return 0
 
     def flush_input(self):
         """

@@ -103,7 +103,7 @@ class SerialDevice(SCPITransport):
         Flush serial input buffer.
         """
         if self.verbose:
-            print("Flush seridl input buffer.")
+            print("Flush serial input buffer.")
         self.conn.reset_input_buffer()
 
     def flush_output(self):
@@ -111,5 +111,11 @@ class SerialDevice(SCPITransport):
         Flush serial output buffer.
         """
         if self.verbose:
-            print("Flush seridl input buffer.")
+            print("Flush serial input buffer.")
         self.conn.reset_output_buffer()
+
+    def pending_input(self):
+        """
+        Return number of bytes waiting in input buffer.
+        """
+        return self.conn.in_waiting
