@@ -287,6 +287,12 @@ class SCPIDevice(object):
         """
         self.conn.flush_output()
 
+    def close(self):
+        """
+        Close connection to device.
+        """
+        self.conn.close()
+
 
     # SCPI standard commands (possible of override by subclassing...)
 

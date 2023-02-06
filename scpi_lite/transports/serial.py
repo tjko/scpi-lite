@@ -119,3 +119,9 @@ class SerialDevice(SCPITransport):
         Return number of bytes waiting in input buffer.
         """
         return self.conn.in_waiting
+
+    def close(self):
+        """
+        Close serial connection.
+        """
+        return self.conn.close()

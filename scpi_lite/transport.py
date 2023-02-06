@@ -65,4 +65,9 @@ class SCPITransport:
         Flush output buffer, discarding all its contents.
         """
 
+    def close(self):
+        """
+        Close connection.
+        """
+
 
