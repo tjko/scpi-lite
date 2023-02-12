@@ -54,7 +54,7 @@ class TCPDevice(SCPITransport):
 
         try:
             self.conn = socket.create_connection((self.host, self.port), timeout)
-        except (ConnectionRefusedError, socket.gaierror, socket.timeout) as err:
+        except (socket.gaierror, socket.error) as err:
             errmsg = "Connection to %s:%s failed: %s" % (self.host, self.port, err)
             raise SCPITransportError(errmsg)
 
@@ -75,13 +75,12 @@ class TCPDevice(SCPITransport):
 
         try:
             r = self.conn.recv(self.READ_BUF_SIZE)
-        except socket.timeout:
-            print('%s: read timeout' % (__name__))
-            r = bytes()
+        except socket.error:
+            raise SCPITransportError(err)
 
+        r = bytes()
         if self.verbose:
             print('Read: %d: %s' % (len(r), r))
-
         return r.rstrip()
 
 
@@ -93,5 +92,9 @@ class TCPDevice(SCPITransport):
         if self.verbose:
             print('Write: %d: %s' % (len(data), data))
 
-        return self.conn.sendall(data)
+        try:
+            res = self.conn.sendall(data)
+        except socket.error as err:
+            raise SCPITransportError(err)
+        return res
 

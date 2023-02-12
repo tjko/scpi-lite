@@ -70,7 +70,10 @@ class SerialDevice(SCPITransport):
         """
         buf = bytearray()
         while True:
-            r = self.conn.read(1)
+            try:
+                r = self.conn.read(1)
+            except serial.SerialException as err:
+                raise SCPITransportError(err)
             if (len(r) < 1):
                 break
             if self.verbose > 1:
@@ -96,7 +99,11 @@ class SerialDevice(SCPITransport):
         """
         if self.verbose:
             print('Write: %d: %s' % (len(data), data))
-        return self.conn.write(data)
+        try:
+            res = self.conn.write(data)
+        except serial.SerialException as err:
+            raise SCPITransportError(err)
+        return res
 
     def flush_input(self):
         """
